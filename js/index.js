@@ -1,5 +1,3 @@
-/* ---- SETTING ---- */
-
 var numberParticlesStart = 100;
 var numberParticlesAdded = 20;
 var particleMaxSize = 10;
@@ -11,11 +9,9 @@ var putOff = true;
 var fusion = false;
 
 
-/* ---- INIT ---- */
-
 var particles = [];
-var mouseX = 9999;
-var mouseY = 9999;
+var mouseX = 0;
+var mouseY = 0;
 
 var canvas = document.createElement('canvas');
 var context = canvas.getContext("2d"); 
@@ -31,9 +27,6 @@ document.body.appendChild(canvas);
 
 context.globalCompositeOperation = 'lighter';
 
-
-
-/* ---- CLASS ---- */
 
 function Particle (x, y, size) {
     this.initX = x;
@@ -87,11 +80,11 @@ Particle.prototype.update = function update (mouseX, mouseY){
         };
     
     if(putOff){
-      this.y = this.y + this.velY + forceDirection.y;
-         this.x = Math.sin(this.velX*5) + this.x + forceDirection.x;
+        this.y = this.y + this.velY + forceDirection.y;
+        this.x = Math.sin(this.velX*5) + this.x + forceDirection.x;
     } else {
-      this.y = this.y + this.velY - forceDirection.y;
-         this.x = Math.sin(this.velX*5) + this.x - forceDirection.x;
+        this.y = this.y + this.velY - forceDirection.y;
+        this.x = Math.sin(this.velX*5) + this.x - forceDirection.x;
     }
 
     } else {
@@ -131,8 +124,8 @@ Particle.prototype.renderLinks = function (mouseX, mouseY) {
         context.beginPath();
         context.moveTo(mouseX, mouseY);
         context.lineTo(this.x, this.y);
-      context.strokeStyle = this.color;
-      context.stroke();
+        context.strokeStyle = this.color;
+        context.stroke();
     }
 }
 
@@ -149,9 +142,9 @@ function loop(){
 
     _.chain(particles).each(function(p, index){
         p.update(mouseX, mouseY);
-     if(fusion){
-       p.checkColision(  _.without(particles, p) );
-     }
+        if(fusion){
+            p.checkColision(  _.without(particles, p) );
+        }
         p.renderLinks(mouseX,mouseY);
     }).each(function(p){
         p.render();
@@ -178,7 +171,7 @@ function recordMousePosition (e) {
 function makeMouseOut(e){
   mouseX = 9999;
   mouseY= 9999;
- }
+}
 
 
 /* ---- START ---- */
