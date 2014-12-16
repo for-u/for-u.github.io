@@ -50,8 +50,7 @@ Particle.prototype.init = function init () {
 }
 
 Particle.prototype.render = function render () {
-  
-   var alpha = (1000 - Math.min(this.age, 1000))/1000;
+    var alpha = (1000 - Math.min(this.age, 1000))/1000;
 
     context.beginPath();
     context.globalAlpha = alpha;
@@ -62,24 +61,25 @@ Particle.prototype.render = function render () {
 
 Particle.prototype.update = function update (mouseX, mouseY){
     
-    if(this.y+this.velY+this.size-1 <= canvas.height && this.age < 1 ){
-
+    if (this.y+this.velY+this.size-1 <= canvas.height && this.age < 1 ) {
         var posRelativeToMouse = {
             x : this.x - mouseX,
             y : this.y - mouseY
         };
 
         var distance = Math.sqrt( Math.pow(posRelativeToMouse.x,2) + Math.pow(posRelativeToMouse.y,2) );
-
         var force = (interactionMouseArea - distance) / interactionMouseArea;
-        if(force < 0) force = 0;
+
+        if (force < 0) {
+            force = 0;
+        }
 
         var forceDirection = {
             x :  (posRelativeToMouse.x / distance)*force,
             y :  (posRelativeToMouse.y / distance)*force
         };
     
-    if(putOff){
+    if (putOff) {
         this.y = this.y + this.velY + forceDirection.y;
         this.x = Math.sin(this.velX*5) + this.x + forceDirection.x;
     } else {
@@ -89,21 +89,19 @@ Particle.prototype.update = function update (mouseX, mouseY){
 
     } else {
         this.age *= 1.1;
-        if(this.age > 1000){
+        if (this.age > 1000) {
             this.init();
         }
     }
 }
 
 Particle.prototype.checkColision = function checkColision (particles) {
-
     var that = this;
-
     this.particles = particles;
 
     _.each(particles, function(p){
 
-        if(p.age > 1){
+        if (p.age > 1) {
             var dx = that.x - p.x;
             var dy = that.y - p.y;
 
@@ -117,10 +115,9 @@ Particle.prototype.checkColision = function checkColision (particles) {
 }
 
 Particle.prototype.renderLinks = function (mouseX, mouseY) {
-
     var distance = Math.sqrt( Math.pow(this.x - mouseX, 2) + Math.pow(this.y - mouseY, 2)); // PYTAGOREEEE
 
-    if(distance < wireDistance ){
+    if (distance < wireDistance ) {
         context.beginPath();
         context.moveTo(mouseX, mouseY);
         context.lineTo(this.x, this.y);
@@ -133,7 +130,6 @@ Particle.prototype.renderLinks = function (mouseX, mouseY) {
 /* ---- Functions ----*/
     
 function loop(){
-
     context.clearRect(0,0, canvas.width, canvas.height);
 
     particles = _.filter(particles,function(particles) {
@@ -142,7 +138,7 @@ function loop(){
 
     _.chain(particles).each(function(p, index){
         p.update(mouseX, mouseY);
-        if(fusion){
+        if (fusion) {
             p.checkColision(  _.without(particles, p) );
         }
         p.renderLinks(mouseX,mouseY);
@@ -153,7 +149,6 @@ function loop(){
 }
 
 function addParticles (e) {
-
     for (var i = 0; i < numberParticlesAdded ; i++) {
         particles.push(new Particle(
             e.x+1,
@@ -169,8 +164,8 @@ function recordMousePosition (e) {
 }
 
 function makeMouseOut(e){
-  mouseX = 9999;
-  mouseY= 9999;
+    mouseX = 9999;
+    mouseY= 9999;
 }
 
 
