@@ -26,6 +26,7 @@ body {
   color: red;
   text-transform: uppercase;
   font-weight: normal;
+  text-align: left;
 }
 
 #card p {
