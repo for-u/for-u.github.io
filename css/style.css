@@ -18,7 +18,7 @@ body {
 
 #card div {
   padding: 20px;
-  overflow-y:scroll;
+  overflow-y: hidden;
 }
 
 #card h1 {
