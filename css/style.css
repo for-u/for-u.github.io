@@ -1,3 +1,42 @@
 body {
-    background: #111;
+  background: #00bfff;
+  margin: 0;
+  overflow:hidden;
+  position: relative;
+}
+
+
+#card {
+  background: white;
+  width: 600px;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0px 0px 10px;
+  top: 40px;
+  opacity: 0.8;
+}
+
+#card div {
+  padding: 20px;
+  overflow-y:scroll;
+}
+
+#card h1 {
+  margin-top: 0;
+  color: red;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+
+#card p {
+  font-size: 25px;
+  line-height: 30px;
+}
+
+#card img {
+  width: 100%;
+}
+
+.right {
+  text-align: right;
 }
