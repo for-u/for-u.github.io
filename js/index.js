@@ -31,16 +31,6 @@
             textShadowSupport = false;
         }
         
-        /* Should work in Windows 7 /*
-        if (/windows/i.test(navigator.userAgent))
-        {
-            snowflakes = ['*']; // Windows sucks and doesn't have Unicode chars installed
-            //snowflakes = ['T']; //No FF support for Wingdings
-        }
-        */
-        
-        // FF seems to just be able to handle like 50... 25 with rotation
-        // Safari seems fine with 150+... 75 with rotation
         var i = 50;
         while (i--) {
             addFlake(true);
