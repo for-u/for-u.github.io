@@ -1,182 +1,216 @@
-var numberParticlesStart = 100;
-var numberParticlesAdded = 20;
-var particleMaxSize = 10;
-var lifeTime = 3;
-var interactionMouseArea = 100;
-var wireDistance = 100;
-
-var putOff = true;
-var fusion = false;
-
-
-var particles = [];
-var mouseX = 0;
-var mouseY = 0;
-
-var canvas = document.createElement('canvas');
-var context = canvas.getContext("2d"); 
-
-canvas.id="canvas";
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-canvas.addEventListener('click',addParticles);
-canvas.addEventListener('mousemove',recordMousePosition);
-canvas.addEventListener('mouseout',makeMouseOut);
-
-document.body.appendChild(canvas);
-
-context.globalCompositeOperation = 'lighter';
-
-
-function Particle (x, y, size) {
-    this.initX = x;
-    this.initY = y;
-    this.x = x;
-    this.y = y;
-    this.size = size;
-    this.velX = Math.random()*2;
-    this.velY = Math.random()*3+1;
-    this.color = '#'+Math.floor(Math.random()*15456415-1000).toString(16);
-    this.age = 0.999;
-    this.cycle = 0;
-    this.particles;
-}
-
-Particle.prototype.init = function init () {
-    this.cycle++;
-    this.age = 0.999;
-    this.x = _.random(0, canvas.width);
-    this.y = -this.size;
-}
-
-Particle.prototype.render = function render () {
-    var alpha = (1000 - Math.min(this.age, 1000))/1000;
-
-    context.beginPath();
-    context.globalAlpha = alpha;
-    context.fillStyle = this.color;
-    context.arc(this.x,this.y,this.size,0,Math.PI*2);
-    context.fill();
-}
-
-Particle.prototype.update = function update (mouseX, mouseY){
+(function ($) {
+    var ww = 0;
+    var wh = 0;
+    var maxw = 0;
+    var minw = 0;
+    var maxh = 0;
+    var textShadowSupport = true;
+    var xv = 0;
+    var snowflakes = ["\u2744", "\u2745", "\u2746"];
+    var prevTime;
+    var absMax = 200;
+    var flakeCount = 0;
     
-    if (this.y+this.velY+this.size-1 <= canvas.height && this.age < 1 ) {
-        var posRelativeToMouse = {
-            x : this.x - mouseX,
-            y : this.y - mouseY
+    $(init);
+
+    function init() {
+        var detectSize = function () {
+            ww = $(window).width();
+            wh = $(window).height();
+            
+            maxw = ww + 300;
+            minw = -300;
+            maxh = wh + 300;
         };
-
-        var distance = Math.sqrt( Math.pow(posRelativeToMouse.x,2) + Math.pow(posRelativeToMouse.y,2) );
-        var force = (interactionMouseArea - distance) / interactionMouseArea;
-
-        if (force < 0) {
-            force = 0;
+        
+        detectSize();
+        
+        $(window).resize(detectSize);
+        
+        if (!$('body').css('textShadow')) {
+            textShadowSupport = false;
         }
-
-        var forceDirection = {
-            x :  (posRelativeToMouse.x / distance)*force,
-            y :  (posRelativeToMouse.y / distance)*force
-        };
-    
-    if (putOff) {
-        this.y = this.y + this.velY + forceDirection.y;
-        this.x = Math.sin(this.velX*5) + this.x + forceDirection.x;
-    } else {
-        this.y = this.y + this.velY - forceDirection.y;
-        this.x = Math.sin(this.velX*5) + this.x - forceDirection.x;
+        
+        /* Should work in Windows 7 /*
+        if (/windows/i.test(navigator.userAgent))
+        {
+            snowflakes = ['*']; // Windows sucks and doesn't have Unicode chars installed
+            //snowflakes = ['T']; //No FF support for Wingdings
+        }
+        */
+        
+        // FF seems to just be able to handle like 50... 25 with rotation
+        // Safari seems fine with 150+... 75 with rotation
+        var i = 50;
+        while (i--) {
+            addFlake(true);
+        }
+        
+        prevTime = new Date().getTime();
+        setInterval(move, 50);
     }
 
-    } else {
-        this.age *= 1.1;
-        if (this.age > 1000) {
-            this.init();
-        }
-    }
-}
-
-Particle.prototype.checkColision = function checkColision (particles) {
-    var that = this;
-    this.particles = particles;
-
-    _.each(particles, function(p){
-
-        if (p.age > 1) {
-            var dx = that.x - p.x;
-            var dy = that.y - p.y;
-
-            var distance = Math.sqrt(dx * dx + dy * dy); 
-
-            if (distance < that.size + p.size) {
-                that.age = 1.1;
+    function addFlake(initial) {
+        flakeCount++;
+        
+        var sizes = [
+            {
+                r: 1.0,
+                css: {
+                    fontSize: 15 + Math.floor(Math.random() * 20) + 'px',
+                    textShadow: '9999px 0 0 rgba(238, 238, 238, 0.5)'
+                },
+                v: 2
+            },
+            {
+                r: 0.6,
+                css: {
+                    fontSize: 50 + Math.floor(Math.random() * 20) + 'px',
+                    textShadow: '9999px 0 2px #eee'
+                },
+                v: 6
+            },
+            {
+                r: 0.2,
+                css: {
+                    fontSize: 90 + Math.floor(Math.random() * 30) + 'px',
+                    textShadow: '9999px 0 6px #eee'
+                },
+                v: 12
+            },
+            {
+                r: 0.1,
+                css: {
+                    fontSize: 150 + Math.floor(Math.random() * 50) + 'px',
+                    textShadow: '9999px 0 24px #eee'
+                },
+                v: 20
             }
-        }       
-    });
-}
-
-Particle.prototype.renderLinks = function (mouseX, mouseY) {
-    var distance = Math.sqrt( Math.pow(this.x - mouseX, 2) + Math.pow(this.y - mouseY, 2)); // PYTAGOREEEE
-
-    if (distance < wireDistance ) {
-        context.beginPath();
-        context.moveTo(mouseX, mouseY);
-        context.lineTo(this.x, this.y);
-        context.strokeStyle = this.color;
-        context.stroke();
-    }
-}
-
-
-/* ---- Functions ----*/
+        ];
     
-function loop(){
-    context.clearRect(0,0, canvas.width, canvas.height);
-
-    particles = _.filter(particles,function(particles) {
-        return particles.cycle < lifeTime ;
-    });
-
-    _.chain(particles).each(function(p, index){
-        p.update(mouseX, mouseY);
-        if (fusion) {
-            p.checkColision(  _.without(particles, p) );
+        var $nowflake = $('<span class="winternetz">' + snowflakes[Math.floor(Math.random() * snowflakes.length)] + '</span>').css(
+            {
+                /*fontFamily: 'Wingdings',*/
+                color: '#eee',
+                display: 'block',
+                position: 'fixed',
+                background: 'transparent',
+                width: 'auto',
+                height: 'auto',
+                margin: '0',
+                padding: '0',
+                textAlign: 'left',
+                zIndex: 9999
+            }
+        );
+        
+        if (textShadowSupport) {
+            $nowflake.css('textIndent', '-9999px');
         }
-        p.renderLinks(mouseX,mouseY);
-    }).each(function(p){
-        p.render();
-    });
-    requestAnimationFrame(loop);
-}
+        
+        var r = Math.random();
+        var i = sizes.length;
+        var v = 0;
+        
+        while (i--) {
+            if (r < sizes[i].r) {
+                v = sizes[i].v;
+                $nowflake.css(sizes[i].css);
+                break;
+            }
+        }
+    
+        var x = (-300 + Math.floor(Math.random() * (ww + 300)));
+        var y = 0;
 
-function addParticles (e) {
-    for (var i = 0; i < numberParticlesAdded ; i++) {
-        particles.push(new Particle(
-            e.x+1,
-            e.y-10,
-            _.random(0, particleMaxSize))
+        if (typeof initial == 'undefined' || !initial) {
+            y = -300;
+        }
+        else {
+            y = (-300 + Math.floor(Math.random() * (wh + 300)));
+        }
+    
+        $nowflake.css(
+            {
+                left: x + 'px',
+                top: y + 'px'
+            }
+        );
+        
+        $nowflake.data('x', x);
+        $nowflake.data('y', y);
+        $nowflake.data('v', v);
+        $nowflake.data('half_v', Math.round(v * 0.5));
+        
+        $('body').append($nowflake);
+    }
+    
+    function move() {
+        if (Math.random() > 0.8) {
+            xv += -1 + Math.random() * 2;
+            
+            if (Math.abs(xv) > 3) {
+                xv = 3 * (xv / Math.abs(xv));
+            }
+        }
+        
+        // Throttle code
+        var newTime = new Date().getTime();
+        var diffTime = newTime - prevTime;
+        prevTime = newTime;
+        
+        if (diffTime < 55 && flakeCount < absMax) {
+            addFlake();
+        }
+        else if (diffTime > 150) {
+            $('span.winternetz:first').remove();
+            flakeCount--;
+        }
+        
+        $('span.winternetz').each(
+            function ()
+            {
+                var x = $(this).data('x');
+                var y = $(this).data('y');
+                var v = $(this).data('v');
+                var half_v = $(this).data('half_v');
+                
+                y += v;
+                
+                x += Math.round(xv * v);
+                x += -half_v + Math.round(Math.random() * v);
+                
+                // because flakes are rotating, the origin could be +/- the size of the flake offset
+                if (x > maxw) {
+                    x = -300;
+                }
+                else if (x < minw) {
+                    x = ww;
+                }
+                
+                if (y > maxh) {
+                    $(this).remove();
+                    flakeCount--;
+                    
+                    addFlake();
+                }
+                else {
+                    $(this).data('x', x);
+                    $(this).data('y', y);
+
+                    $(this).css(
+                        {
+                            left: x + 'px',
+                            top: y + 'px'
+                        }
+                    );
+                    
+                    // only spin biggest three flake sizes
+                    if (v >= 6) {
+                        $(this).animate({rotate: '+=' + half_v + 'deg'}, 0);
+                    }
+                }
+            }
         );
     }
-}
-
-function recordMousePosition (e) {
-    mouseX = e.x;
-    mouseY = e.y;
-}
-
-function makeMouseOut(e){
-    mouseX = 9999;
-    mouseY= 9999;
-}
-
-
-/* ---- START ---- */
-
-for (var i = 0; i < numberParticlesStart ; i++) {
-    particles.push(new Particle(
-        _.random(0, canvas.width),
-        _.random(0, canvas.height),
-        _.random(0, particleMaxSize))
-    );
-}
-
-loop();
+})(jQuery);

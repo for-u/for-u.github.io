@@ -1,4 +1,3 @@
-* {
-  overflow: hidden;
-  background-color: black;
+body {
+    background: #111;
 }
